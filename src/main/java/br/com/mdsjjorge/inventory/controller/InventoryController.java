@@ -18,20 +18,42 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.mdsjjorge.inventory.model.Inventory;
 import br.com.mdsjjorge.inventory.repository.InventoryRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.MediaType;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
-@RequestMapping("/inventory")
+@RequestMapping(value = "/inventory", produces = {"application/json"})
+@Tag(name = "InventoryAPI")
 public class InventoryController {
 	
 	@Autowired
 	private InventoryRepository inventoryRepository;
 	
+	@Operation(summary = "Busca todos os itens de inventario cadastrados", method = "GET")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Itens encontrados com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisição invalida"),
+            @ApiResponse(responseCode = "400", description = "Parametros invalidos"),
+            @ApiResponse(responseCode = "500", description = "Erro ao realizar a busca de itens"),
+    })
 	@GetMapping
 	public List<Inventory> getAll(){		
 		return inventoryRepository.findAll();		
 	}
 
-	@GetMapping("{id}")
+	@Operation(summary = "Busca item de inventario por id", method = "GET")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Item encontrado com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisicao invalida"),
+            @ApiResponse(responseCode = "400", description = "Parametros invalidos"),
+            @ApiResponse(responseCode = "500", description = "Erro ao realizar a busca de item"),
+    })
+	@GetMapping("id")
 	public ResponseEntity<?> getById(@PathVariable Long id) {
 	    Optional<Inventory> inventory = inventoryRepository.findById(id);
 	    if (inventory.isPresent()) {
@@ -42,6 +64,14 @@ public class InventoryController {
 	    }
 	}
 	
+	@Operation(summary = "Retorna a quantidade de itens cadastrados", method = "GET")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Itens encontrados com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisição invalido"),
+            @ApiResponse(responseCode = "400", description = "Parametros invalidos"),
+            @ApiResponse(responseCode = "500", description = "Erro ao realizar a busca de itens"),
+    })
+	@Parameter(name = "complete", description = "Filtrar por completude dos itens (true, false ou all)", in = ParameterIn.QUERY)
 	@GetMapping("/howmany")
 	public ResponseEntity<Long> getHowMany(@RequestParam(name = "complete", required = false) String completeParam) {
 	    if (completeParam != null) {
@@ -57,19 +87,40 @@ public class InventoryController {
 	    return ResponseEntity.ok(totalCount);
 	}
 	
-	@PostMapping
+	@Operation(summary = "Realiza o cadastro de um item de inventario", method = "POST")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Upload de arquivo realizado com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisição invalida"),
+            @ApiResponse(responseCode = "400", description = "Parametros invalidos"),
+            @ApiResponse(responseCode = "500", description = "Erro ao realizar o upload de arquivo"),
+    })
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public String create(@RequestBody Inventory item ) {
 		inventoryRepository.save(item);
 		return "Inventory item created!";
 	}
 
+	@Operation(summary = "Realiza o cadastro de uma lista de itens de inventario", method = "POST")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Upload de arquivo realizado com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisição invalida"),
+            @ApiResponse(responseCode = "400", description = "Parametros invalidos"),
+            @ApiResponse(responseCode = "500", description = "Erro ao realizar o upload de arquivo"),
+    })
 	@PostMapping("/createList")
 	public String createList(@RequestBody List<Inventory> itens) {
 		inventoryRepository.saveAll(itens);
 		return "Inventory itens created!";
 	}
 	
-	@PutMapping("/{id}")
+	@Operation(summary = "Atualiza um item do inventario por ID", method = "PUT")
+	@ApiResponses(value = {
+	        @ApiResponse(responseCode = "200", description = "Item atualizado com sucesso"),
+	        @ApiResponse(responseCode = "404", description = "Item nao encontrado"),
+	        @ApiResponse(responseCode = "400", description = "Dados invalidos"),
+	        @ApiResponse(responseCode = "500", description = "Erro ao atualizar o item"),
+	})
+	@PutMapping("/id")
 	public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Inventory item) {
 		Optional<Inventory> inventory = inventoryRepository.findById(id);
 		if (inventory.isPresent()) {
@@ -87,6 +138,13 @@ public class InventoryController {
 	    }
 	}
 	
+	@Operation(summary = "Atualiza uma lista de itens", method = "PUT")
+	@ApiResponses(value = {
+	        @ApiResponse(responseCode = "200", description = "Item atualizado com sucesso"),
+	        @ApiResponse(responseCode = "404", description = "Item nao encontrado"),
+	        @ApiResponse(responseCode = "400", description = "Dados invalidos"),
+	        @ApiResponse(responseCode = "500", description = "Erro ao atualizar o item"),
+	})
 	@PutMapping("/updateList")
 	public String updateList(@RequestBody List<Inventory> itens) {
 		if(itens.size() > 0) {
@@ -95,7 +153,13 @@ public class InventoryController {
 		return "Inventory itens has been updated!";
 	}
 	
-	@DeleteMapping("{id}")
+	@Operation(summary = "Exclui um item do inventario por ID", method = "DELETE")
+	@ApiResponses(value = {
+	        @ApiResponse(responseCode = "204", description = "Item excluido com sucesso"),
+	        @ApiResponse(responseCode = "404", description = "Item nao encontrado"),
+	        @ApiResponse(responseCode = "500", description = "Erro ao excluir o item"),
+	})
+	@DeleteMapping("id")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		Optional<Inventory> inventory = inventoryRepository.findById(id);
 	    if (inventory.isPresent()) {
