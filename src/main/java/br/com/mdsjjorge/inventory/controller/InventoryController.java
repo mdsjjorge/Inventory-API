@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.mdsjjorge.inventory.DTO.InventoryDTO;
 import br.com.mdsjjorge.inventory.model.Inventory;
 import br.com.mdsjjorge.inventory.repository.InventoryRepository;
 
@@ -42,17 +42,20 @@ public class InventoryController {
 	    }
 	}
 	
-//	@GetMapping("/{id}")
-//	public ResponseEntity<InventoryDTO> getInventoryById(@PathVariable Long id) {
-//	    Optional<Inventory> inventory = inventoryRepository.findById(id);
-//	    if (inventory.isPresent()) {
-//	    	InventoryDTO dto = new InventoryDTO();
-//	        InventoryDTO dtoEntity = dto.convertToDTO(inventory.get());
-//	        return ResponseEntity.ok(dtoEntity);
-//	    } else {
-//	        return ResponseEntity.notFound().build();
-//	    }
-//	}
+	@GetMapping("/howmany")
+	public ResponseEntity<Long> getHowMany(@RequestParam(name = "complete", required = false) String completeParam) {
+	    if (completeParam != null) {
+	        if (completeParam.equals("true")) {
+	            long trueCount = inventoryRepository.countByComplete(true);
+	            return ResponseEntity.ok(trueCount);
+	        } else if (completeParam.equals("false")) {
+	            long falseCount = inventoryRepository.countByComplete(false);
+	            return ResponseEntity.ok(falseCount);
+	        }
+	    }
+	    long totalCount = inventoryRepository.count();
+	    return ResponseEntity.ok(totalCount);
+	}
 	
 	@PostMapping
 	public String create(@RequestBody Inventory item ) {

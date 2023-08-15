@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import br.com.mdsjjorge.inventory.model.Inventory;
 
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
-
+	long countByComplete(boolean complete);
 }
